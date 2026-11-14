@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Earth System Trend Detective</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>Earth System Trend Detective</h1>
+    <p>One planet, opposite trends. Pick two places and find out which changes are real.</p>
+  </div>
+  <div class="cases" aria-label="One-click case studies"></div>
+  <button class="ghost" id="reopen">Start the detective wizard</button>
+</header>
+
+<section class="panel" id="wizbox">
+  <p class="mut" id="prog">Step 1 of 3</p>
+  <div id="wz"></div>
+</section>
+
+<main id="dash">
+  <section class="mapcol">
+    <div class="seg"><span class="mut">Next map click sets</span>
+      <button data-slot="A" class="on">Region A</button><button data-slot="B">Region B</button></div>
+    <div id="map"></div>
+  </section>
+  <section>
+    <div class="ctl">
+      <label>Variable <select id="v"></select></label>
+      <label class="sw"><input type="checkbox" id="ds"><span></span>Remove seasonal cycle (Deseasonalize)</label>
+      <label class="sw"><input type="checkbox" id="live"><span></span>Live NASA POWER data</label>
+    </div>
+    <article class="card" id="cA"></article>
+    <article class="card" id="cB"></article>
+    <article class="clue" id="clue"></article>
+  </section>
+</main>
+
+<footer>Cached demo series are synthetic: a seasonal cycle, a trend set from published regional rates, and autocorrelated noise. Turn on live NASA POWER data for real temperature and precipitation (2005–2024).</footer>
+<div id="toast" role="status" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
