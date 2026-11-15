@@ -1,53 +1,146 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Earth System Trend Detective</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700&display=swap">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#071321">
+<title>ECO EYE — Earth Trend Detective</title>
+<link rel="preconnect" href="https://unpkg.com"><link rel="preconnect" href="https://earthdata.nasa.gov">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <div>
-    <h1>Earth System Trend Detective</h1>
-    <p>One planet, opposite trends. Pick two places and find out which changes are real.</p>
-  </div>
-  <div class="cases" aria-label="One-click case studies"></div>
-  <button class="ghost" id="reopen">Start the detective wizard</button>
-</header>
-
-<section class="panel" id="wizbox">
-  <p class="mut" id="prog">Step 1 of 3</p>
-  <div id="wz"></div>
+<header class="top"><div class="shell nav">
+ <div class="brand"><div class="logo">◎</div><div>ECO EYE<small>EARTH SYSTEM TREND DETECTIVE</small></div></div>
+ <nav class="navlinks"><a href="#monitor">Monitor</a><a href="#trends">Climate Lab</a><a href="#compare">Compare Regions</a><a href="#lunar">Moon Watch</a><a href="#detective">AI Detective</a><a href="#events">Events</a><a href="#about">About</a></nav>
+ <span class="pill">● EARTH OBSERVATORY</span>
+</div></header>
+<main class="shell">
+<section class="hero">
+ <div><div class="eyebrow">NASA SPACE APPS • EARTH INTELLIGENCE</div><h1>Read the signals.<br><span class="gradient">Understand Earth.</span></h1>
+ <p>An Earth-system investigation dashboard that brings satellite imagery, natural-event reports and climate indicators together — so anyone can explore what is changing, where, and why it matters.</p>
+ <div class="hero-actions"><a class="btn primary" href="#monitor" style="text-decoration:none">Explore live Earth ↗</a><button class="btn" id="refreshBtn">↻ Refresh data</button></div>
+ <div class="status" style="margin-top:14px">Data status: <b id="globalStatus">Connecting to NASA sources…</b> <span id="updatedAt"></span></div>
+ </div>
+ <div class="orbit"><div class="ring"></div><div class="earth"></div></div>
 </section>
-
-<main id="dash">
-  <section class="mapcol">
-    <div class="seg"><span class="mut">Next map click sets</span>
-      <button data-slot="A" class="on">Region A</button><button data-slot="B">Region B</button></div>
-    <div id="map"></div>
-  </section>
-  <section>
-    <div class="ctl">
-      <label>Variable <select id="v"></select></label>
-      <label class="sw"><input type="checkbox" id="ds"><span></span>Remove seasonal cycle (Deseasonalize)</label>
-      <label class="sw"><input type="checkbox" id="live"><span></span>Live NASA POWER data</label>
-    </div>
-    <article class="card" id="cA"></article>
-    <article class="card" id="cB"></article>
-    <article class="clue" id="clue"></article>
-  </section>
+<section class="section" id="monitor">
+ <div class="section-head"><div><h2>Earth at a glance</h2><div class="sub">Live counts are fetched from NASA EONET when available.</div></div><span class="pill">GLOBAL OVERVIEW · SEARCH WORLDWIDE</span></div>
+ <div class="grid kpis">
+  <div class="card"><div class="kpi-top">Open natural events <span>◉</span></div><div class="kpi-value" id="kEvents">—</div><div class="kpi-note">NASA EONET event records</div></div>
+  <div class="card"><div class="kpi-top">Fire observations <span>♨</span></div><div class="kpi-value" id="kFires">External</div><div class="kpi-note">Open NASA FIRMS viewer</div></div>
+  <div class="card"><div class="kpi-top">Selected region <span>⌖</span></div><div class="kpi-value" id="kRegion" style="font-size:21px">Global</div><div class="kpi-note">Choose a study area below</div></div>
+  <div class="card"><div class="kpi-top">Data connection <span>⌁</span></div><div class="kpi-value" id="kConnection" style="font-size:21px">Checking</div><div class="kpi-note">NASA open data services</div></div>
+ </div>
+</section>
+<section class="section">
+ <div class="section-head"><div><h2>Global event intelligence</h2><div class="sub">Explore reported natural events on a world map. Select a marker for details.</div></div><span class="pill">NASA EONET</span></div>
+ <div class="grid map-layout">
+  <div class="card map-card"><div class="map-toolbar">
+   <select id="eventFilter"><option value="all">All event types</option><option value="Wildfires">Wildfires</option><option value="Severe Storms">Severe storms</option><option value="Floods">Floods</option><option value="Volcanoes">Volcanoes</option><option value="Drought">Drought</option><option value="Sea and Lake Ice">Sea & lake ice</option></select>
+   <input id="placeSearch" placeholder="Search city, region or country" autocomplete="off"><button class="btn" id="searchPlace">Find place</button><span class="status" id="placeStatus" role="status">Search worldwide places</span>
+  </div>
+  <div class="map-toolbar satellite-tools">
+   <label class="status">Satellite layer <select id="satLayer"><option value="VIIRS_SNPP_CorrectedReflectance_TrueColor">VIIRS true colour (recent)</option><option value="MODIS_Terra_CorrectedReflectance_TrueColor">MODIS true colour</option><option value="MODIS_Terra_NDVI_8Day">Vegetation index (NDVI)</option><option value="MODIS_Terra_Land_Surface_Temp_Day">Land surface temperature</option><option value="MODIS_Terra_Thermal_Anomalies_All">Thermal anomalies / fire</option></select></label>
+   <label class="status">Imagery date <input id="satDate" type="date"></label>
+   <label class="status">Opacity <input id="satOpacity" type="range" min="15" max="100" value="75"></label>
+   <button class="btn" id="applySatellite">Apply imagery</button>
+  </div>
+  <div class="region-picks"><span class="status">Quick explore:</span><button class="btn region-btn" data-lat="20" data-lon="0" data-zoom="2">🌐 World</button><button class="btn region-btn" data-lat="20.59" data-lon="78.96" data-zoom="4">Asia</button><button class="btn region-btn" data-lat="9.1" data-lon="8.7" data-zoom="3">Africa</button><button class="btn region-btn" data-lat=" -2" data-lon="-60" data-zoom="4">Amazon</button><button class="btn region-btn" data-lat="37" data-lon="-96" data-zoom="3">North America</button><button class="btn region-btn" data-lat="-25" data-lon="135" data-zoom="4">Australia</button><button class="btn region-btn" data-lat=" -78" data-lon="0" data-zoom="3">Antarctica</button></div>
+  <div id="map"></div><div class="status" style="padding:9px 4px 1px">NASA GIBS satellite imagery overlay + Esri/OpenStreetMap labels. Click anywhere on the map to set the study coordinates below.</div></div>
+  <div class="card"><div class="section-head"><div><h2 style="font-size:16px">Latest event feed</h2><div class="sub">Open event reports</div></div><span class="tag" id="eventCount">Loading</span></div><div class="side-list" id="eventList"><div class="status">Loading NASA event feed…</div></div></div>
+ </div>
+ <div class="notice">Important: event feeds are observations and reports, not a complete measure of every hazard. Some NASA layers update with a delay. This dashboard does not issue official emergency warnings.</div>
+</section>
+<section class="section lunar-section" id="lunar">
+ <div class="section-head"><div><h2>🌙 Lunar & orbital observatory</h2><div class="sub">A space-station inspired widget for lunar phase, illumination and Earth–Moon context.</div></div><span class="pill">MOON WATCH · LIVE CLOCK</span></div>
+ <div class="grid lunar-grid">
+  <div class="card moon-card"><div class="moon-stars"></div><div class="moon-orbit"><div class="moon-globe" id="moonDisc"></div></div><div class="moon-info"><div class="eyebrow">CURRENT LUNAR PHASE</div><div class="moon-phase" id="moonPhase">Calculating…</div><div class="sub" id="moonDate">—</div><div class="moon-illum" id="moonIllum">Illumination —</div></div></div>
+  <div class="card space-widget"><div class="eyebrow">MISSION CLOCK</div><div class="mission-time" id="missionClock">--:--:--</div><div class="sub">UTC · Coordinated Universal Time</div><div class="widget-line"></div><div class="widget-pair"><span>Earth rotation</span><b>15° / hour</b></div><div class="widget-pair"><span>Moon orbital period</span><b>~27.3 days</b></div><div class="widget-pair"><span>Mean Earth–Moon distance</span><b>~384,400 km</b></div><div class="sub" style="margin-top:13px">Astronomy values are educational reference figures; this panel is not a spacecraft tracker.</div></div>
+  <div class="card climate-quick"><div class="eyebrow">CLIMATE WATCHLIST</div><h3 style="margin:8px 0">More signals to investigate</h3><div class="watch-item"><span>🌡️ Heat & temperature</span><button class="mini-link" data-param="T2M">Track ↗</button></div><div class="watch-item"><span>🌧️ Rainfall & water</span><button class="mini-link" data-param="PRECTOTCORR">Track ↗</button></div><div class="watch-item"><span>🌱 Soil moisture</span><button class="mini-link" data-param="GWETROOT">Track ↗</button></div><div class="watch-item"><span>💨 Wind & atmosphere</span><button class="mini-link" data-param="WS2M">Track ↗</button></div><div class="watch-item"><span>☀️ Solar energy</span><button class="mini-link" data-param="ALLSKY_SFC_SW_DWN">Track ↗</button></div><div class="watch-item"><span>💧 Humidity</span><button class="mini-link" data-param="RH2M">Track ↗</button></div></div>
+ </div>
+ <div class="notice">Moon phase and illumination are calculated locally from the current date using an approximate lunar-cycle model. They are not a live NASA spacecraft feed.</div>
+</section>
+<section class="section" id="trends">
+ <div class="section-head"><div><h2>Regional trend laboratory</h2><div class="sub">Request historical environmental indicators for a chosen location using NASA POWER.</div></div><span class="pill">NASA POWER API</span></div>
+ <div class="card">
+  <div class="controls">
+   <label>Study location<input id="locName" value="Pune, India" style="width:190px"></label>
+   <label>Latitude<input id="lat" type="number" step=".0001" value="18.5204" style="width:105px"></label>
+   <label>Longitude<input id="lon" type="number" step=".0001" value="73.8567" style="width:105px"></label>
+   <label>Earth indicator<select id="parameter">
+    <optgroup label="Temperature & climate"><option value="T2M">Air temperature (°C)</option><option value="T2M_MAX">Maximum temperature (°C)</option><option value="T2M_MIN">Minimum temperature (°C)</option><option value="T2MDEW">Dew-point temperature (°C)</option><option value="TS">Surface temperature (°C)</option></optgroup>
+    <optgroup label="Water & rainfall"><option value="PRECTOTCORR">Precipitation (mm/day)</option><option value="RH2M">Relative humidity (%)</option><option value="QV2M">Specific humidity (g/kg)</option><option value="GWETROOT">Root-zone soil wetness (fraction)</option><option value="GWETTOP">Top-layer soil wetness (fraction)</option></optgroup>
+    <optgroup label="Atmosphere & energy"><option value="WS2M">Wind speed (m/s)</option><option value="PS">Surface pressure (kPa)</option><option value="ALLSKY_SFC_SW_DWN">Solar radiation (kWh/m²/day)</option></optgroup>
+   </select></label>
+   <label>History window<select id="historyYears"><option value="1">1 year</option><option value="3">3 years</option><option value="5" selected>5 years</option><option value="10">10 years</option></select></label>
+   <button class="btn primary" id="loadTrend">Analyse region</button>
+  </div>
+  <div class="sub" id="trendStatus" style="margin:12px 0">Choose a location and analyse to load historical data.</div>
+  <div class="chartbox"><canvas id="trendChart"></canvas></div>
+  <div class="sub" id="chartCaption">Historical daily values from NASA POWER. Recent data availability varies by parameter and location.</div>
+ </div>
+</section>
+<section class="section" id="compare">
+ <div class="section-head"><div><h2>🌍 Two-place trend detective</h2><div class="sub">Compare two regions with the same NASA POWER indicator, just like a side-by-side Earth-system investigation.</div></div><span class="pill">REGION A vs REGION B</span></div>
+ <div class="card">
+  <div class="preset-row"><button class="btn preset-pair" data-pair="arctic">Arctic warming vs Central Eurasia</button><button class="btn preset-pair" data-pair="amazon">Amazon vs South Asian monsoon</button><button class="btn preset-pair" data-pair="antarctic">Antarctic vs Tropical Pacific</button></div>
+  <div class="compare-controls">
+   <label>Region A<select id="compareA"><option value="arctic">Arctic Circle</option><option value="amazon">Amazon Rainforest</option><option value="antarctic">Antarctic interior</option><option value="monsoon">South Asian Monsoon</option><option value="eurasia">Central Eurasia</option><option value="pacific">Tropical Pacific</option></select></label>
+   <label>Region B<select id="compareB"><option value="eurasia">Central Eurasia</option><option value="monsoon">South Asian Monsoon</option><option value="pacific">Tropical Pacific</option><option value="arctic">Arctic Circle</option><option value="amazon">Amazon Rainforest</option><option value="antarctic">Antarctic interior</option></select></label>
+   <label>Indicator<select id="compareParam"><option value="T2M">Air temperature (°C)</option><option value="PRECTOTCORR">Precipitation (mm/day)</option><option value="RH2M">Relative humidity (%)</option><option value="WS2M">Wind speed (m/s)</option><option value="T2M_MAX">Maximum temperature (°C)</option><option value="T2M_MIN">Minimum temperature (°C)</option></select></label>
+   <label>Years<select id="compareYears"><option value="10">10 years</option><option value="15" selected>15 years</option><option value="20">20 years</option></select></label>
+   <button class="btn primary" id="runCompare">Compare regions</button>
+  </div>
+  <div id="compareStatus" class="sub" style="margin:12px 0">Choose a pair or customise both regions, then compare.</div>
+  <div class="compare-grid"><div class="compare-panel"><div class="compare-title"><b>REGION A</b><span id="compareNameA">Arctic Circle</span></div><div class="compare-stat" id="compareSlopeA">—</div><div class="sub" id="compareDetailA">Trend per decade</div><canvas id="compareChartA" height="180"></canvas></div><div class="compare-panel"><div class="compare-title"><b>REGION B</b><span id="compareNameB">Central Eurasia</span></div><div class="compare-stat" id="compareSlopeB">—</div><div class="sub" id="compareDetailB">Trend per decade</div><canvas id="compareChartB" height="180"></canvas></div></div>
+  <div class="detective-clue" id="compareClue"><b>Detective clue</b><p>Compare both regions using the same variable and time window. A difference in trend does not by itself prove that one region causes changes in the other.</p></div>
+ </div>
+</section>
+<section class="section" id="detective">
+ <div class="section-head"><div><h2>AI Earth detective</h2><div class="sub">Turn measurements into understandable clues. Findings are rule-based interpretations, not an official forecast.</div></div><span class="pill">PATTERN ANALYSIS</span></div>
+ <div class="grid two">
+  <div class="card"><h3 style="margin:0 0 6px">Investigation report</h3><div class="sub">Generated from the most recent regional data loaded above.</div><div id="insights"><div class="insight"><strong>Waiting for evidence</strong><p>Load NASA POWER data to generate a regional analysis.</p></div></div><button class="btn" id="downloadReport">Download investigation report</button></div>
+  <div class="card"><h3 style="margin:0 0 6px">Past vs recent comparison</h3><div class="sub">Compare average values across the first and last portions of the loaded dataset.</div>
+   <div class="compare" style="margin-top:14px"><div class="visual"><div><div class="sub">EARLIER PERIOD</div><div id="oldAvg" style="font-size:27px;font-weight:800">—</div><small id="oldDate">No data</small></div></div><div class="visual"><div><div class="sub">RECENT PERIOD</div><div id="newAvg" style="font-size:27px;font-weight:800">—</div><small id="newDate">No data</small></div></div></div>
+   <div id="comparisonText" class="sub" style="margin-top:13px">A comparison will appear after analysis.</div>
+  </div>
+ </div>
+</section>
+<section class="section" id="topics">
+ <div class="section-head"><div><h2>Earth systems you can investigate</h2><div class="sub">Choose a topic to jump to the most relevant observation layer or dataset.</div></div><span class="pill">MULTI-SYSTEM TRACKING</span></div>
+ <div class="grid three">
+  <div class="card topic-card" data-layer="MODIS_Terra_NDVI_8Day"><div style="font-size:24px">🌳</div><b>Land & vegetation</b><div class="sub">Vegetation greenness, seasonal change and possible land-cover stress.</div><button class="btn topic-go">View vegetation layer</button></div>
+  <div class="card topic-card" data-layer="MODIS_Terra_Thermal_Anomalies_All"><div style="font-size:24px">🔥</div><b>Wildfires & heat</b><div class="sub">Thermal anomaly observations and reported fire-related events.</div><button class="btn topic-go">View thermal layer</button></div>
+  <div class="card topic-card" data-layer="MODIS_Terra_Land_Surface_Temp_Day"><div style="font-size:24px">🌡️</div><b>Surface temperature</b><div class="sub">Land surface temperature imagery and regional air-temperature records.</div><button class="btn topic-go">View temperature layer</button></div>
+  <div class="card topic-card" data-layer="VIIRS_SNPP_CorrectedReflectance_TrueColor"><div style="font-size:24px">🌊</div><b>Oceans & water</b><div class="sub">Inspect coastlines, water extent and visible changes in satellite imagery.</div><button class="btn topic-go">View satellite image</button></div>
+  <div class="card topic-card" data-layer="MODIS_Terra_CorrectedReflectance_TrueColor"><div style="font-size:24px">☁️</div><b>Atmosphere & storms</b><div class="sub">Cloud systems and storm context using satellite imagery and event reports.</div><button class="btn topic-go">View cloud imagery</button></div>
+  <div class="card topic-card"><div style="font-size:24px">🌧️</div><b>Rainfall & drought clues</b><div class="sub">Use NASA POWER precipitation and humidity time series for a chosen location.</div><button class="btn" onclick="document.querySelector('#trends').scrollIntoView({behavior:'smooth'})">Analyse rainfall</button></div>
+ </div>
+ <div class="notice">Not every Earth system has a single globally complete live measurement. Some layers are satellite snapshots or composite products, and some indicators are updated daily or less frequently. Use the date shown for each product.</div>
+</section>
+<section class="section" id="events">
+ <div class="section-head"><div><h2>Earth investigation tools</h2><div class="sub">Open authoritative NASA explorers for deeper inspection and validation.</div></div><span class="pill">RESEARCH DESK</span></div>
+ <div class="grid three">
+  <a class="card" href="https://worldview.earthdata.nasa.gov/" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><div style="font-size:25px">🛰️</div><h3>NASA Worldview</h3><div class="sub">Browse satellite imagery and compare dates across the globe.</div><span class="tag">Satellite imagery ↗</span></a>
+  <a class="card" href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><div style="font-size:25px">🔥</div><h3>NASA FIRMS</h3><div class="sub">Explore active fire detections from satellite observations.</div><span class="tag">Fire monitoring ↗</span></a>
+  <a class="card" href="https://earthobservatory.nasa.gov/" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><div style="font-size:25px">🌎</div><h3>NASA Earth Observatory</h3><div class="sub">Read science stories explaining environmental changes.</div><span class="tag">Earth science ↗</span></a>
+  <a class="card" href="https://eonet.gsfc.nasa.gov/" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><div style="font-size:25px">🌪️</div><h3>NASA EONET</h3><div class="sub">Explore categorized natural events and event metadata.</div><span class="tag">Event tracking ↗</span></a>
+  <a class="card" href="https://power.larc.nasa.gov/" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><div style="font-size:25px">📈</div><h3>NASA POWER</h3><div class="sub">Access meteorological and solar data for regional analysis.</div><span class="tag">Climate indicators ↗</span></a>
+  <a class="card" href="https://www.earthdata.nasa.gov/" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><div style="font-size:25px">📚</div><h3>NASA Earthdata</h3><div class="sub">Discover datasets, documentation and scientific data tools.</div><span class="tag">Data catalogue ↗</span></a>
+ </div>
+</section>
+<section class="section" id="about">
+ <div class="card"><div class="eyebrow">OUR METHOD</div><h2 style="margin:8px 0">From satellite signal to environmental insight</h2>
+  <div class="grid three" style="margin-top:16px">
+   <div><b>01 · Observe</b><div class="sub">Collect NASA Earth-observation products and event reports.</div></div>
+   <div><b>02 · Compare</b><div class="sub">Examine locations, dates and indicator changes using transparent calculations.</div></div>
+   <div><b>03 · Explain</b><div class="sub">Translate patterns into evidence-based clues and useful next questions.</div></div>
+  </div>
+  <div class="notice">Science note: NASA POWER provides gridded/reanalysis and satellite-derived parameters, not necessarily ground-station measurements at the exact pin. A trend in one indicator alone does not prove its cause. Validate conclusions with additional datasets and local sources.</div>
+ </div>
+</section>
+<footer class="footer"><b style="color:#dcecff">ECO EYE</b> · NASA Space Apps Challenge concept prototype<br>Independent student project; not an official NASA product or emergency service. Data and services belong to their respective providers. <span id="footerTime"></span></footer>
 </main>
-
-<footer>Cached demo series are synthetic: a seasonal cycle, a trend set from published regional rates, and autocorrelated noise. Turn on live NASA POWER data for real temperature and precipitation (2005–2024).</footer>
-<div id="toast" role="status" hidden></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="data.js"></script>
-<script src="app.js"></script>
-</body>
-</html>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'"></script>
+<script src="script.js"></script>
+</body></html>
